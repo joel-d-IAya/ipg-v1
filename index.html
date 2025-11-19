@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromptGenius</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background-color: #0d1a2e; /* brand-dark-blue */
+    }
+    
+    /* Custom styles for the temperature range slider */
+    .temperature-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      background: #2c3d5a; /* brand-light-blue */
+      border-radius: 5px;
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+    
+    .temperature-slider:hover {
+      opacity: 1;
+    }
+    
+    .temperature-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #e0e0e0;
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    
+    .temperature-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #e0e0e0;
+      border-radius: 50%;
+      cursor: pointer;
+      border: none;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              cyan: '#00d1ff',
+              orange: '#f9a826',
+              'dark-blue': '#0d1a2e',
+              'mid-blue': '#1a2b42',
+              'light-blue': '#2c3d5a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai/dist/index.js"
+  }
+}
+</script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

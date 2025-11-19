@@ -1,0 +1,5 @@
+{
+  "name": "ipgv1",
+  "description": "An expert prompt engineering assistant for image generation models. It transforms user requests into perfect, detailed text prompts for creating or editing images.",
+  "requestFramePermissions": []
+}
