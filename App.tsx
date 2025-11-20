@@ -280,6 +280,7 @@ const App: React.FC = () => {
     // Add the new famous artist style with the selected name
     const newArtistStyle = `artistic_styles-famous_artist_style:${artistName}`;
     setSelectedTransformations([...otherTransformations, newArtistStyle]);
+    setGeneratedPrompt(null);
     handleCloseArtistModal();
   };
 
