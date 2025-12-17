@@ -1,7 +1,7 @@
 import React from 'react';
 import { LANGUAGES } from '../constants';
 import type { Language } from '../types';
-import { iayaLogo } from '../assets/logo';
+import iayaLogo from '../assets/logo.png';
 
 interface HeaderProps {
     language: Language;
