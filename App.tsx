@@ -26,7 +26,7 @@ const App: React.FC = () => {
     }
     return 'en';
   });
-  
+
   // UI/Mode state
   const [creationMode, setCreationMode] = useState<CreationMode>('transform');
   const [isArtistModalOpen, setIsArtistModalOpen] = useState<boolean>(false);
@@ -40,7 +40,8 @@ const App: React.FC = () => {
   const [useSearchGrounding, setUseSearchGrounding] = useState<boolean>(true);
   const [selectedTransformations, setSelectedTransformations] = useState<string[]>(['artistic_styles-photorealistic']);
   const [outputFormat, setOutputFormat] = useState<string>('format-16_9');
-  
+  const [customAspectRatio, setCustomAspectRatio] = useState<string>('');
+
   // Transform-specific state
   const [sourceImageFile, setSourceImageFile] = useState<File | null>(null);
   const [sourceImageUrl, setSourceImageUrl] = useState<string | null>(null);
@@ -53,7 +54,7 @@ const App: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [gallery, setGallery] = useState<string[]>([]);
-  
+
   // Lightbox state
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [selectedLightboxImageIndex, setSelectedLightboxImageIndex] = useState<number>(0);
@@ -93,7 +94,7 @@ const App: React.FC = () => {
     setError(null);
     setBasePrompt('');
     if (mode === 'create') {
-        handleImageUpload(null);
+      handleImageUpload(null);
     }
   };
 
@@ -128,7 +129,7 @@ const App: React.FC = () => {
     setBasePrompt(suggestion);
     setGeneratedPrompt(null);
   };
-  
+
   const handleGenerate = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -137,18 +138,18 @@ const App: React.FC = () => {
     // --- Iteration Flow ---
     // If a prompt already exists, the user is iterating. Use the existing prompt directly.
     if (generatedPrompt) {
-        try {
-            const imageUrl = await imageService.generateImage(generatedPrompt, outputFormat);
-            setGeneratedImage(imageUrl);
-            setGallery(prev => [imageUrl, ...prev]);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            setError(message);
-            console.error(err);
-        } finally {
-            setIsLoading(false);
-        }
-        return; // End the function here for iteration
+      try {
+        const imageUrl = await imageService.generateImage(generatedPrompt, outputFormat, customAspectRatio);
+        setGeneratedImage(imageUrl);
+        setGallery(prev => [imageUrl, ...prev]);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+      return; // End the function here for iteration
     }
 
     // --- Initial Generation Flow (if generatedPrompt is null) ---
@@ -167,34 +168,34 @@ const App: React.FC = () => {
         const sourceImageDescription = analysis.description;
 
         const rawInstructions = getRawInstructions({
-            targetLanguage: language,
-            transformations: selectedTransformations,
+          targetLanguage: language,
+          transformations: selectedTransformations,
         });
 
         const combinedPromptForSynthesis = `Based on an image described as: "${sourceImageDescription}". Now, apply this modification: "${basePrompt}".`;
-        
+
         setGeneratedPrompt(t('generating', language));
         const synthesizedPrompt = await geminiService.synthesizePrompt(combinedPromptForSynthesis, rawInstructions, language, temperature);
         setGeneratedPrompt(synthesizedPrompt);
-        
+
         let finalPrompt = synthesizedPrompt;
 
         if (useSearchGrounding) {
-            setGeneratedPrompt('Enriching prompt with Google Search...');
-            const serviceConfig = { 
-                tools: [{googleSearch: {}}],
-                temperature: temperature
-            };
-            const response = await geminiService.models.generateContent({
-                model: 'gemini-2.5-flash',
-                contents: synthesizedPrompt,
-                config: serviceConfig,
-            });
-            finalPrompt = response.text;
-            setGeneratedPrompt(finalPrompt);
+          setGeneratedPrompt('Enriching prompt with Google Search...');
+          const serviceConfig = {
+            tools: [{ googleSearch: {} }],
+            temperature: temperature
+          };
+          const response = await geminiService.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: synthesizedPrompt,
+            config: serviceConfig,
+          });
+          finalPrompt = response.text;
+          setGeneratedPrompt(finalPrompt);
         }
 
-        const imageUrl = await imageService.generateImage(finalPrompt, outputFormat);
+        const imageUrl = await imageService.generateImage(finalPrompt, outputFormat, customAspectRatio);
         setGeneratedImage(imageUrl);
         setGallery(prev => [imageUrl, ...prev]);
 
@@ -210,47 +211,47 @@ const App: React.FC = () => {
 
     // --- Creation Flow ---
     if (creationMode === 'create') {
-        try {
-            const rawInstructions = getRawInstructions({
-                targetLanguage: language,
-                transformations: [...selectedTransformations, outputFormat],
-            });
+      try {
+        const rawInstructions = getRawInstructions({
+          targetLanguage: language,
+          transformations: [...selectedTransformations, outputFormat],
+        });
 
-            setGeneratedPrompt(t('generating', language));
+        setGeneratedPrompt(t('generating', language));
 
-            const synthesizedPrompt = await geminiService.synthesizePrompt(basePrompt, rawInstructions, language, temperature);
-            setGeneratedPrompt(synthesizedPrompt);
-            
-            let finalPrompt = synthesizedPrompt;
+        const synthesizedPrompt = await geminiService.synthesizePrompt(basePrompt, rawInstructions, language, temperature);
+        setGeneratedPrompt(synthesizedPrompt);
 
-            if (useSearchGrounding) {
-                setGeneratedPrompt('Enriching prompt with Google Search...');
-                const serviceConfig = { 
-                    tools: [{googleSearch: {}}],
-                    temperature: temperature
-                };
-                const response = await geminiService.models.generateContent({
-                    model: 'gemini-2.5-flash',
-                    contents: synthesizedPrompt,
-                    config: serviceConfig,
-                });
-                finalPrompt = response.text;
-                setGeneratedPrompt(finalPrompt);
-            }
+        let finalPrompt = synthesizedPrompt;
 
-            const imageUrl = await imageService.generateImage(finalPrompt, outputFormat);
-            setGeneratedImage(imageUrl);
-            setGallery(prev => [imageUrl, ...prev]);
-
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            setError(message);
-            console.error(err);
-        } finally {
-            setIsLoading(false);
+        if (useSearchGrounding) {
+          setGeneratedPrompt('Enriching prompt with Google Search...');
+          const serviceConfig = {
+            tools: [{ googleSearch: {} }],
+            temperature: temperature
+          };
+          const response = await geminiService.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: synthesizedPrompt,
+            config: serviceConfig,
+          });
+          finalPrompt = response.text;
+          setGeneratedPrompt(finalPrompt);
         }
+
+        const imageUrl = await imageService.generateImage(finalPrompt, outputFormat, customAspectRatio);
+        setGeneratedImage(imageUrl);
+        setGallery(prev => [imageUrl, ...prev]);
+
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
     }
-  }, [creationMode, language, outputFormat, sourceImageFile, basePrompt, selectedTransformations, useSearchGrounding, generatedPrompt, temperature]);
+  }, [creationMode, language, outputFormat, customAspectRatio, sourceImageFile, basePrompt, selectedTransformations, useSearchGrounding, generatedPrompt, temperature]);
 
   const handleOpenLightbox = (index: number) => {
     setSelectedLightboxImageIndex(index);
@@ -317,6 +318,8 @@ const App: React.FC = () => {
             setSelectedTransformations={handleTransformationsChange}
             outputFormat={outputFormat}
             setOutputFormat={setOutputFormat}
+            customAspectRatio={customAspectRatio}
+            setCustomAspectRatio={setCustomAspectRatio}
             isLoading={isLoading}
             onGenerate={handleGenerate}
             useSearchGrounding={useSearchGrounding}
@@ -349,7 +352,7 @@ const App: React.FC = () => {
           />
         </div>
 
-        <Gallery 
+        <Gallery
           language={language}
           images={gallery}
           currentImage={generatedImage}

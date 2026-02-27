@@ -10,6 +10,8 @@ interface TransformationSelectorProps {
     setOutputFormat: (format: string) => void;
     language: Language;
     onOpenArtistModal: () => void;
+    customAspectRatio: string;
+    setCustomAspectRatio: (ratio: string) => void;
 }
 
 interface AccordionItemProps {
@@ -52,11 +54,11 @@ const AccordionItem: React.FC<AccordionItemProps> = ({ title, description, isOpe
 
 // Define camera angle sub-types for special selection logic
 const CAMERA_ANGLE_PERSPECTIVES = new Set([
-    'camera_angle-eye_level', 'camera_angle-high_angle', 'camera_angle-low_angle', 
+    'camera_angle-eye_level', 'camera_angle-high_angle', 'camera_angle-low_angle',
     'camera_angle-top_down_shot', 'camera_angle-aerial_view'
 ]);
 const CAMERA_ANGLE_ORIENTATIONS = new Set([
-    'camera_angle-frontal_view', 'camera_angle-three_quarter_profile', 
+    'camera_angle-frontal_view', 'camera_angle-three_quarter_profile',
     'camera_angle-profile_shot', 'camera_angle-rear_view'
 ]);
 
@@ -67,14 +69,16 @@ export const TransformationSelector: React.FC<TransformationSelectorProps> = ({
     outputFormat,
     setOutputFormat,
     language,
-    onOpenArtistModal
+    onOpenArtistModal,
+    customAspectRatio,
+    setCustomAspectRatio,
 }) => {
     const [openCategory, setOpenCategory] = useState<string>('framing');
 
     const handleToggleCategory = (categoryKey: string) => {
         setOpenCategory(prev => (prev === categoryKey ? '' : categoryKey));
     };
-    
+
     const handleToggleTransformation = (key: string) => {
         const [categoryKey] = key.split('-');
 
@@ -122,7 +126,7 @@ export const TransformationSelector: React.FC<TransformationSelectorProps> = ({
         <div className="space-y-0 bg-brand-mid-blue rounded-lg border border-brand-light-blue/50 overflow-hidden">
             {transformationCategories.map(([categoryKey, categoryData]) => {
                 if (!categoryData) return null;
-                
+
                 // Safe access to dynamic properties
                 const title = (categoryData as any)[`category_${language}`] || categoryData.category_en;
                 const description = (categoryData as any)[`description_${language}`] || categoryData.description_en;
@@ -139,13 +143,14 @@ export const TransformationSelector: React.FC<TransformationSelectorProps> = ({
                             {categoryData.transformations && categoryData.transformations.map(t => {
                                 const isFormatCategory = categoryKey === 'format';
                                 const isFamousArtistStyle = t.valueKey === 'artistic_styles-famous_artist_style';
+                                const isLibreFormat = t.valueKey === 'format-libre';
 
-                                const isSelected = isFormatCategory 
-                                    ? outputFormat === t.valueKey 
+                                const isSelected = isFormatCategory
+                                    ? outputFormat === t.valueKey
                                     : isFamousArtistStyle
                                         ? selectedTransformations.some(s => s.startsWith(t.valueKey))
                                         : selectedTransformations.includes(t.valueKey);
-                                
+
                                 const handleClick = () => {
                                     if (isFamousArtistStyle) {
                                         onOpenArtistModal();
@@ -155,21 +160,38 @@ export const TransformationSelector: React.FC<TransformationSelectorProps> = ({
                                         handleToggleTransformation(t.valueKey);
                                     }
                                 };
-                                
+
                                 const label = (t as any)[`label_${language}`] || t.label_en;
 
                                 return (
-                                    <button
-                                        key={t.valueKey}
-                                        onClick={handleClick}
-                                        className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 border ${
-                                            isSelected 
-                                            ? 'bg-brand-cyan border-brand-cyan text-brand-dark-blue font-semibold' 
-                                            : 'bg-brand-light-blue border-brand-light-blue hover:border-brand-cyan/70 text-gray-200'
-                                        }`}
-                                    >
-                                        {label}
-                                    </button>
+                                    <React.Fragment key={t.valueKey}>
+                                        <button
+                                            onClick={handleClick}
+                                            className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 border ${isSelected
+                                                    ? isLibreFormat
+                                                        ? 'bg-brand-orange border-brand-orange text-brand-dark-blue font-semibold'
+                                                        : 'bg-brand-cyan border-brand-cyan text-brand-dark-blue font-semibold'
+                                                    : 'bg-brand-light-blue border-brand-light-blue hover:border-brand-cyan/70 text-gray-200'
+                                                }`}
+                                        >
+                                            {label}
+                                        </button>
+                                        {/* Custom ratio input shown inline when format-libre is selected */}
+                                        {isLibreFormat && outputFormat === 'format-libre' && (
+                                            <div className="flex items-center gap-2 w-full mt-2 p-2 bg-brand-orange/10 border border-brand-orange/40 rounded-md">
+                                                <span className="text-xs text-brand-orange font-semibold whitespace-nowrap">✦ Nano Banana 2</span>
+                                                <span className="text-xs text-gray-400">Ratio&nbsp;W:H</span>
+                                                <input
+                                                    type="text"
+                                                    value={customAspectRatio}
+                                                    onChange={(e) => setCustomAspectRatio(e.target.value)}
+                                                    placeholder="ex: 3:5"
+                                                    className="w-24 bg-brand-dark-blue border border-brand-orange/50 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-orange"
+                                                />
+                                                <span className="text-xs text-gray-500 italic">Laisser vide = auto</span>
+                                            </div>
+                                        )}
+                                    </React.Fragment>
                                 );
                             })}
                         </div>

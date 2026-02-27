@@ -1,7 +1,24 @@
 # MIG Technical Specs - DiayaVinci Knowledge Base
 
+## Modèles
+
+### Nano Banana 2 — `gemini-3.1-flash-image-preview` ⭐ Nouveau
+
+- **Rôle** : Modèle principal pour l'**édition d'images** et la génération en **format libre/custom**.
+- **Optimisé pour** : Vitesse, volumes élevés, intégration de recherche web en temps réel.
+- **Formats supportés** : Tous — 1:1, 4:3, 3:4, 16:9, 9:16, 21:9, 9:21, et **ratios personnalisés**.
+
+### Imagen 4 — `imagen-4.0-generate-001`
+
+- **Rôle** : Génération d'images depuis un prompt texte (formats standards uniquement).
+- **Formats supportés** : 1:1, 4:3, 3:4, 16:9, 9:16, 21:9.
+
+---
+
 ## Formats (Aspect Ratios)
-- **Auto**: Le format sera déterminé automatiquement.
+
+- **Auto**: Le format sera déterminé automatiquement. *(Imagen 4)*
+- **9:21 (Ultra Tall)**: Portrait ultra haut 9:21. *(Nano Banana 2)*
 - **9:16 (Tall)**: Le format final doit être un portrait haut 9:16.
 - **2:3 (Portrait)**: Le format final doit être un portrait 2:3.
 - **3:4 (Portrait)**: Le format final doit être un portrait 3:4.
@@ -12,8 +29,10 @@
 - **3:2 (Landscape)**: Le format final doit être un paysage 3:2.
 - **16:9 (Wide)**: Le format final doit être un paysage large 16:9.
 - **21:9 (Ultrawide)**: Le format final doit être un paysage ultra large 21:9.
+- **✦ Libre (Custom)**: Format personnalisé via ratio W:H saisi par l'utilisateur. *(Nano Banana 2 uniquement)*
 
 ## Framing
+
 - **Macro Shot**: Cadre un plan macro extrême, révélant des détails minuscules.
 - **Tight Shot**: Utilise un plan très serré sur une partie spécifique du sujet.
 - **Close-Up**: Cadre un gros plan sur le sujet, typiquement le visage.
@@ -26,6 +45,7 @@
 - **Extreme Wide Shot**: Utilise un plan très large où l'environnement domine le sujet.
 
 ## Camera Angles
+
 - **Frontal View**: Cadre le sujet directement de face.
 - **Three-Quarter Profile**: Cadre le sujet de profil trois quarts.
 - **Profile Shot**: Cadre le sujet de profil strict.
@@ -37,6 +57,7 @@
 - **Aerial View**: Vue depuis une grande hauteur.
 
 ## Artistic Styles
+
 - **3D Render**: Polygoné.
 - **Abstract**: Formes et couleurs.
 - **Manga / Anime**: Style japonais.
@@ -77,6 +98,7 @@
 - **Watercolor**: Aquarelle.
 
 ## Lighting
+
 - **Natural Lighting**: Soleil, fenêtre.
 - **Backlighting**: Contre-jour.
 - **Studio Lighting**: Professionnel.
@@ -94,6 +116,7 @@
 - **Blue Hour**: Crépuscule.
 
 ## Lenses
+
 - **Wide-Angle Lens**: Perspective large (24mm).
 - **Telephoto Lens**: Compresser la perspective (135mm).
 - **Macro Lens**: Gros plans extrêmes.

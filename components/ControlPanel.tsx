@@ -22,6 +22,8 @@ interface ControlPanelProps {
   setSelectedTransformations: (keys: string[]) => void;
   outputFormat: string;
   setOutputFormat: (format: string) => void;
+  customAspectRatio: string;
+  setCustomAspectRatio: (ratio: string) => void;
   isLoading: boolean;
   onGenerate: () => void;
   useSearchGrounding: boolean;
@@ -37,13 +39,14 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
   language, creationMode, setCreationMode, basePrompt, setBasePrompt,
   sourceImageUrl, handleImageUpload, selectedTransformations,
   setSelectedTransformations, outputFormat, setOutputFormat,
-  isLoading, onGenerate, useSearchGrounding, setUseSearchGrounding, 
+  customAspectRatio, setCustomAspectRatio,
+  isLoading, onGenerate, useSearchGrounding, setUseSearchGrounding,
   temperature, setTemperature, onAnalyze, isAnalyzing, onOpenArtistModal
 }) => {
   const isTransformMode = creationMode === 'transform';
 
   const promptLabel = isTransformMode ? t('editingInstructions', language) : t('basePrompt', language);
-  const promptPlaceholder = isTransformMode 
+  const promptPlaceholder = isTransformMode
     ? t('editingPlaceholder', language)
     : t('basePromptPlaceholder', language);
 
@@ -83,23 +86,21 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
 
   return (
     <div className="bg-brand-mid-blue rounded-lg p-6 border border-brand-light-blue/50 space-y-6">
-      
+
       {/* Mode Switcher */}
       <div className="flex bg-brand-dark-blue p-1 rounded-lg">
         <button
           onClick={() => setCreationMode('transform')}
-          className={`w-1/2 py-2.5 text-sm font-semibold rounded-md flex items-center justify-center transition-colors duration-300 ${
-            isTransformMode ? 'bg-brand-cyan text-brand-dark-blue' : 'text-gray-300 hover:bg-brand-light-blue/50'
-          }`}
+          className={`w-1/2 py-2.5 text-sm font-semibold rounded-md flex items-center justify-center transition-colors duration-300 ${isTransformMode ? 'bg-brand-cyan text-brand-dark-blue' : 'text-gray-300 hover:bg-brand-light-blue/50'
+            }`}
         >
           {isTransformMode && <CheckIcon className="w-5 h-5 mr-2" />}
           {t('transformMyImage', language)}
         </button>
         <button
           onClick={() => setCreationMode('create')}
-          className={`w-1/2 py-2.5 text-sm font-semibold rounded-md flex items-center justify-center transition-colors duration-300 ${
-            !isTransformMode ? 'bg-brand-cyan text-brand-dark-blue' : 'text-gray-300 hover:bg-brand-light-blue/50'
-          }`}
+          className={`w-1/2 py-2.5 text-sm font-semibold rounded-md flex items-center justify-center transition-colors duration-300 ${!isTransformMode ? 'bg-brand-cyan text-brand-dark-blue' : 'text-gray-300 hover:bg-brand-light-blue/50'
+            }`}
         >
           {!isTransformMode && <CheckIcon className="w-5 h-5 mr-2" />}
           {t('createAnImage', language)}
@@ -109,9 +110,9 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Main Inputs */}
       {isTransformMode ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
-          <ImageUploader 
+          <ImageUploader
             language={language}
-            sourceImageUrl={sourceImageUrl} 
+            sourceImageUrl={sourceImageUrl}
             onImageUpload={handleImageUpload}
             onAnalyze={onAnalyze}
             isAnalyzing={isAnalyzing}
@@ -145,7 +146,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
             />
           </div>
           <div className="flex items-center pt-1">
-            <input 
+            <input
               type="checkbox"
               id="search-grounding"
               checked={useSearchGrounding}
@@ -153,7 +154,7 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
               className="h-4 w-4 rounded border-gray-300 text-brand-cyan bg-brand-dark-blue focus:ring-brand-cyan"
             />
             <label htmlFor="search-grounding" className="ml-2 flex items-center text-sm text-gray-400">
-              <SearchIcon className="w-4 h-4 mr-1.5"/>
+              <SearchIcon className="w-4 h-4 mr-1.5" />
               {t('useSearch', language)}
             </label>
           </div>
@@ -173,13 +174,15 @@ export const ControlPanel: React.FC<ControlPanelProps> = ({
       {/* Transformation Options */}
       <fieldset className="transition-opacity duration-300">
         <legend className="sr-only">Image creation and transformation options</legend>
-        <TransformationSelector 
+        <TransformationSelector
           selectedTransformations={selectedTransformations}
           setSelectedTransformations={setSelectedTransformations}
           outputFormat={outputFormat}
           setOutputFormat={setOutputFormat}
           language={language}
           onOpenArtistModal={onOpenArtistModal}
+          customAspectRatio={customAspectRatio}
+          setCustomAspectRatio={setCustomAspectRatio}
         />
       </fieldset>
 

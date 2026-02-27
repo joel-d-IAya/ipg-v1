@@ -1,0 +1,200 @@
+# DiayaVinci (ipg-v1) Project Rules
+
+## AI Prompt Standards
+- **System Prompts**: MUST always be written in **English** for maximum logic precision and adherence to instructions.
+- **Output Language**: The assistant must respect the `language` parameter (fr, en, es) for the *User Content*, but the *System Instructions* must remain in English.
+- **Image Generation**: When generating prompts for images or describing visual scenes, ALWAYS refer to `MIG_Technical_Specs.md` for consistent ratios, framing, styles, and lighting terminology.
+
+## Model Selection Priority
+When orchestrating LLM calls (via n8n or direct API), follow this capability-based priority order:
+1. **z.ai** (Primary for speed/efficiency)
+2. **Kimi k2.5** (Advanced reasoning/long context)
+3. **Gemini 2.0/Pro** (Multimodal/Google ecosystem)
+4. **Claude 3.5 Sonnet** (Complex creative writing/logic)
+
+> [!IMPORTANT]
+> If no explicit information about API/Model preferences is available in these rules for a specific context, DO NOT default to OpenAI. You MUST explicitly ask Joel to define the preferred model.
+
+## Skill & MCP Usage
+- **Skill Selection**: ALWAYS use the `skill-selector` skill at the beginning of a new task or project to identify and load the most relevant skills.
+- **UX/UI Design**: ALWAYS use the `Stitch` MCP and Stitch-related skills (e.g., `enhance-prompt`, `design-md`, `react:components`) when working on UX/UI creation, optimization, or visual design tasks.
+- **Workflow Automation**: Use the `n8n-manager` skill for any complex automation or orchestration needs.
+
+## Deployment
+- **VPS Deployment**: Always check permissions and project-specific deploy scripts/keys before attempting to update the VPS environment.
+
+VPS Deploy Key for repo GitHub joel-d-IAya/ipg-v1
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIN1M8Px/Fj2FIcVUJD7mJdAz9KJrTZNLyoqT4nxxDmAZ deploy-key-ipg-v1@iaya.cloud
+```
+Private key location on local machine: `C:\Users\joeld\.ssh\deploy_ipg_v1`
+Added on 2026-02-27 by @joel-d-IAya
+
+---
+
+# RÈGLE FONDAMENTALE — Gestion des Users Multi-Apps sur Directus IAya
+
+> **Scope** : S'applique à TOUS les agents IA (Antigravity, Claude Code, Goose, n8n, etc.)
+> qui interagissent avec l'instance Directus IAya (cms.iaya.cloud)
+> **Priorité** : 🔴 CRITIQUE — Ne jamais dévier de ces règles
+
+---
+
+## 📐 Principe Architectural
+
+L'instance Directus IAya héberge plusieurs applications distinctes partageant
+la même base de users. Pour éviter les conflits de permissions entre apps :
+
+- **1 seul role générique** → `iaya_platform_user` (pour tous les users de toutes les apps)
+- **1 access policy par app/agent** → contrôle l'accès aux collections de cette app
+- **Les policies sont assignées directement au user** (pas au role)
+- **Un user peut cumuler plusieurs policies** → accès à plusieurs apps simultanément
+
+---
+
+## 📏 Les 4 Règles Gravées dans le Marbre
+
+### RÈGLE 1 — Nouvelle app ou agent = nouvelle Access Policy
+
+Chaque fois qu'une nouvelle application ou un nouvel agent est créé sur l'infrastructure IAya
+et qu'il nécessite des users, tu dois créer une Access Policy dédiée dans Directus.
+
+**Naming convention** : `{nom_app}_access`
+Exemples : `ipg_v1_access`, `libros_academIA_access`, `agent_master_access`
+
+**La policy doit définir :**
+- Les collections accessibles par les users de cette app
+- Les permissions CRUD autorisées par collection
+- Les filtres éventuels (ex: un user ne voit que ses propres données)
+
+**Ne jamais** créer un nouveau role pour chaque app — un seul role `iaya_platform_user` suffit.
+
+---
+
+### RÈGLE 2 — Inscription d'un user sur une app = vérifier l'existence avant de créer
+
+Quand un user s'inscrit sur une app IAya, **toujours vérifier en premier** si cet utilisateur
+existe déjà dans `directus_users` avant de créer un nouveau compte.
+
+**Logique de vérification (dans cet ordre) :**
+
+```
+INSCRIPTION user sur App X
+        │
+        ▼
+Chercher dans directus_users
+par EMAIL ou MOBILE
+        │
+   ┌────┴────┐
+   │Existe ? │
+   └────┬────┘
+   OUI  │  NON
+        │   └──► Créer le user avec role: iaya_platform_user
+        │              + assigner policy: {app}_access
+        │
+        ▼
+Assigner uniquement la policy
+{app}_access au user existant
+(ne pas toucher à son role ni
+à ses autres policies)
+```
+
+**Champs à vérifier pour déduplication (dans cet ordre) :**
+- `user_mobile` (priorité 1) — identifiant le plus fiable, difficile à multiplier
+- `email` (priorité 2) — fallback si pas de mobile fourni
+
+> **Pourquoi le mobile en priorité ?** Un numéro de mobile réel implique un coût
+> et une démarche physique. Un email peut être dupliqué à l'infini via des alias
+> (ex: user+alias@gmail.com). Le mobile est donc l'identifiant anti-fraude
+> le plus robuste pour les apps freemium IAya.
+
+---
+
+### RÈGLE 3 — Connexion d'un user sur une app = vérifier la policy correspondante
+
+Avant d'autoriser l'accès d'un user à une app, **toujours vérifier** qu'il possède
+la policy correspondante à cette app.
+
+**Logique de vérification :**
+
+```
+TENTATIVE DE CONNEXION sur App X
+        │
+        ▼
+Récupérer le user via email/token
+        │
+        ▼
+Vérifier ses policies actives
+        │
+   ┌────┴──────────────────┐
+   │ {app_x}_access existe?│
+   └────┬──────────────────┘
+   OUI  │  NON
+        │   └──► Refuser l'accès
+        │        Message: "Vous n'avez pas accès à cette application"
+        │        (Ne pas révéler si le compte existe ou non)
+        ▼
+Autoriser l'accès + retourner
+le profil user + ses préférences
+```
+
+---
+
+### RÈGLE 4 — Ne jamais modifier le role d'un user existant
+
+Le role `iaya_platform_user` est **immuable** pour tous les users des apps IAya.
+Seules les **policies** doivent être ajoutées ou retirées selon les accès requis.
+
+Modifier le role d'un user peut casser ses accès sur toutes les autres apps
+où il est inscrit.
+
+---
+
+## 🚦 Résumé Décisionnel Rapide
+
+| Situation | Action |
+|-----------|--------|
+| Nouvelle app créée | Créer `{app}_access` policy dans Directus |
+| User s'inscrit (nouveau) | Créer user + role `iaya_platform_user` + assigner `{app}_access` |
+| User s'inscrit (déjà existant) | Assigner uniquement `{app}_access` à l'user existant |
+| User se connecte | Vérifier présence de `{app}_access` dans ses policies |
+| User quitte une app | Retirer `{app}_access` de ses policies (ne pas supprimer le user) |
+| Admin veut accès tout | Assigner toutes les policies pertinentes (pas un nouveau role) |
+
+---
+
+## 🔧 Implémentation Technique (référence)
+
+**Vérifier les policies d'un user via l'API Directus :**
+```http
+GET /users/{user_id}?fields=id,email,policies.policy.name
+Authorization: Bearer {ADMIN_TOKEN}
+```
+
+**Assigner une policy à un user :**
+```http
+POST /users/{user_id}/policies
+Authorization: Bearer {ADMIN_TOKEN}
+Content-Type: application/json
+
+{
+  "policy": "{policy_id}"
+}
+```
+
+**Vérifier existence user par mobile (priorité 1) :**
+```http
+GET /users?filter[user_mobile][_eq]=+593912345678&fields=id,email,user_mobile,policies.policy.name
+Authorization: Bearer {ADMIN_TOKEN}
+```
+
+**Vérifier existence user par email (fallback) :**
+```http
+GET /users?filter[email][_eq]=juan@ejemplo.com&fields=id,email,policies.policy.name
+Authorization: Bearer {ADMIN_TOKEN}
+```
+
+---
+
+*Règle établie le 2026-02-27 | Valide pour Directus v11+*
+*À inclure dans : cursorrules Antigravity, CLAUDE.md Claude Code, system prompt Agent Master*
