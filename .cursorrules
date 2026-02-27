@@ -32,6 +32,57 @@ Added on 2026-02-27 by @joel-d-IAya
 
 ---
 
+## VPS Structure — ipg-v1
+
+### Accès SSH
+```
+Host : 72.60.250.79
+User : root
+Auth : clé SSH locale (~/.ssh id_rsa ou clé existante Antigravity)
+```
+
+### Emplacement du projet
+```
+/root/ipg-v1/          ← racine du projet (git repo)
+├── App.tsx
+├── components/
+├── services/
+├── constants.ts
+├── types.ts
+├── index.html
+├── index.tsx
+├── vite.config.ts
+├── Dockerfile         ← mode DEV (npm run dev --host, port 5173)
+├── MIG_Technical_Specs.md
+└── .cursorrules
+```
+
+### Docker
+- **Container** : `mig-mig-1` (image `mig-mig`)
+- **Mode** : Vite dev server (`npm run dev --host`)
+- **Port exposé** : `5173`
+- **Compose** : pas de `docker-compose.yml` racine — appel direct à `docker compose` depuis `/root/ipg-v1/`
+
+### Nginx / Domaine
+- **Vhost** : `staging.iaya.cloud`
+- **Config** : `/etc/nginx/sites-enabled/staging.iaya.cloud`
+- **Proxy** : Nginx → container port 5173
+
+### Commandes de déploiement
+```bash
+# Depuis le VPS (/root/ipg-v1)
+git pull origin main
+docker compose up -d --build
+
+# Vérification
+docker ps | grep mig
+docker logs mig-mig-1 -f
+```
+
+> ⚠️ TODO : Créer un alias de déploiement dans `~/.bashrc` du VPS pour simplifier les mises en production.
+
+---
+
 # RÈGLE FONDAMENTALE — Gestion des Users Multi-Apps sur Directus IAya
 
 > **Scope** : S'applique à TOUS les agents IA (Antigravity, Claude Code, Goose, n8n, etc.)
