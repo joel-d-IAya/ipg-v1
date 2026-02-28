@@ -2,34 +2,35 @@
 
 ## Modèles
 
-### Nano Banana 2 — `gemini-3.1-flash-image-preview` ⭐ Nouveau
+## Modèles
 
-- **Rôle** : Modèle principal pour l'**édition d'images** et la génération en **format libre/custom**.
-- **Optimisé pour** : Vitesse, volumes élevés, intégration de recherche web en temps réel.
-- **Formats supportés** : Tous — 1:1, 4:3, 3:4, 16:9, 9:16, 21:9, 9:21, et **ratios personnalisés**.
+### Nano Banana 2 — `gemini-3.1-flash-image-preview` ⭐ Modèle Unique
 
-### Imagen 4 — `imagen-4.0-generate-001`
+- **Rôle** : Modèle unique pour **toute génération et édition d'images**.
+- **Optimisé pour** : Vitesse supérieure, meilleur rapport qualité/prix, volumes élevés, intégration de recherche web en temps réel.
+- **Formats supportés** : Tous — 1:1, 4:3, 3:4, 16:9, 9:16, 21:9, 9:21, 2:3, 3:2, 4:5, 5:4 et **ratios personnalisés**.
+- **Choix architectural** : Benchmarks démontrent qualité/prix et vitesse supérieurs à Imagen 4. Code simplifié (aucun routage conditionnel).
 
-- **Rôle** : Génération d'images depuis un prompt texte (formats standards uniquement).
-- **Formats supportés** : 1:1, 4:3, 3:4, 16:9, 9:16, 21:9.
+~~### Imagen 4 — `imagen-4.0-generate-001`~~
+~~Retiré au profit de Nano Banana 2 (2026-02-27). Ne supportait que 5 ratios fixes.~~
 
 ---
 
 ## Formats (Aspect Ratios)
 
-- **Auto**: Le format sera déterminé automatiquement. *(Imagen 4)*
-- **9:21 (Ultra Tall)**: Portrait ultra haut 9:21. *(Nano Banana 2)*
-- **9:16 (Tall)**: Le format final doit être un portrait haut 9:16.
-- **2:3 (Portrait)**: Le format final doit être un portrait 2:3.
-- **3:4 (Portrait)**: Le format final doit être un portrait 3:4.
-- **4:5 (Portrait)**: Le format final doit être un portrait 4:5.
-- **1:1 (Square)**: Le format final doit être un carré 1:1.
-- **5:4 (Landscape)**: Le format final doit être un paysage 5:4.
-- **4:3 (Landscape)**: Le format final doit être un paysage 4:3.
-- **3:2 (Landscape)**: Le format final doit être un paysage 3:2.
-- **16:9 (Wide)**: Le format final doit être un paysage large 16:9.
-- **21:9 (Ultrawide)**: Le format final doit être un paysage ultra large 21:9.
-- **✦ Libre (Custom)**: Format personnalisé via ratio W:H saisi par l'utilisateur. *(Nano Banana 2 uniquement)*
+- **Auto**: Format déterminé automatiquement par Nano Banana 2.
+- **9:21 (Ultra Tall)**: Portrait ultra haut.
+- **9:16 (Tall)**: Portrait haut.
+- **2:3 (Portrait)**: Portrait 2:3.
+- **3:4 (Portrait)**: Portrait 3:4.
+- **4:5 (Portrait)**: Portrait 4:5.
+- **1:1 (Square)**: Carré.
+- **5:4 (Landscape)**: Paysage 5:4.
+- **4:3 (Landscape)**: Paysage 4:3.
+- **3:2 (Landscape)**: Paysage 3:2.
+- **16:9 (Wide)**: Paysage large.
+- **21:9 (Ultrawide)**: Paysage ultra large.
+- **✦ Libre (Custom)**: Ratio W:H saisi par l'utilisateur.
 
 ## Framing
 
