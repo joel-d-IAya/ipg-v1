@@ -83,25 +83,46 @@ class ImageService {
 
   /**
    * Edits an existing image using Nano Banana 2.
+   * The model receives the actual image pixels as inlineData and applies targeted modifications.
+   * The prompt is structured to preserve the original subject and only change what's requested.
+   *
+   * @param userInstruction - What the user wants to change (e.g. "change the background to a beach")
+   * @param transformationContext - Optional stylistic instructions from selected transformations
    */
-  async editImage(sourceImageFile: File, prompt: string): Promise<string> {
-    console.log(`Image Service [NB2]: Editing image.`);
+  async editImage(sourceImageFile: File, userInstruction: string, transformationContext?: string): Promise<string> {
+    console.log(`Image Service [NB2]: Editing image — "${userInstruction}"`);
     const { data: base64ImageData, mimeType } = await fileToBase64(sourceImageFile);
 
-    const response: GenerateContentResponse = await this.ai.models.generateContent({
-      model: NANO_BANANA_2_MODEL,
-      contents: {
-        parts: [
-          { inlineData: { data: base64ImageData, mimeType } },
-          { text: prompt },
-        ],
-      },
-      config: {
-        responseModalities: [Modality.IMAGE],
-      },
-    });
+    // Build an explicit editing prompt that tells the model to preserve the subject
+    const editingPrompt = [
+      `You are an expert image editor. You MUST edit the provided image directly.`,
+      `IMPORTANT RULES:`,
+      `1. Keep the main subject(s) EXACTLY as they appear in the original image — same person, same pose, same face, same clothing.`,
+      `2. Only modify what is explicitly requested.`,
+      `3. Do NOT recreate or reimagine the subject. This is an EDIT, not a new generation.`,
+      ``,
+      `EDIT INSTRUCTION: ${userInstruction}`,
+      transformationContext ? `STYLE NOTES: ${transformationContext}` : '',
+    ].filter(Boolean).join('\n');
 
-    return this._processImageResponse(response, 'editing');
+    try {
+      const response: GenerateContentResponse = await this.ai.models.generateContent({
+        model: NANO_BANANA_2_MODEL,
+        contents: {
+          parts: [
+            { inlineData: { data: base64ImageData, mimeType } },
+            { text: editingPrompt },
+          ],
+        },
+        config: {
+          responseModalities: [Modality.IMAGE],
+        },
+      });
+      return this._processImageResponse(response, 'editing');
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      throw new Error(`Image editing failed. ${message}`);
+    }
   }
 }
 

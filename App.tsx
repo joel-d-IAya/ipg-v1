@@ -155,7 +155,7 @@ const App: React.FC = () => {
     // --- Initial Generation Flow (if generatedPrompt is null) ---
     setAnalysisResult(null);
 
-    // --- Transform Flow ---
+    // --- Transform Flow (true image editing with reference photo) ---
     if (creationMode === 'transform') {
       if (!sourceImageFile) {
         setError(t('errorUpload', language));
@@ -163,39 +163,21 @@ const App: React.FC = () => {
         return;
       }
       try {
-        setGeneratedPrompt(t('analyzing', language));
-        const analysis = await geminiService.analyzeImage(sourceImageFile);
-        const sourceImageDescription = analysis.description;
-
+        // Build the user's edit instruction from their base prompt + transformations context
         const rawInstructions = getRawInstructions({
           targetLanguage: language,
           transformations: selectedTransformations,
         });
 
-        const combinedPromptForSynthesis = `Based on an image described as: "${sourceImageDescription}". Now, apply this modification: "${basePrompt}".`;
+        // Combine user instruction with transformation context (style, lighting, etc.)
+        const userInstruction = basePrompt || 'Apply the requested style transformations.';
+        const transformationContext = rawInstructions.length > 0 ? rawInstructions : undefined;
 
-        setGeneratedPrompt(t('generating', language));
-        const synthesizedPrompt = await geminiService.synthesizePrompt(combinedPromptForSynthesis, rawInstructions, language, temperature);
-        setGeneratedPrompt(synthesizedPrompt);
+        setGeneratedPrompt(`Editing image: "${userInstruction}"`);
 
-        let finalPrompt = synthesizedPrompt;
-
-        if (useSearchGrounding) {
-          setGeneratedPrompt('Enriching prompt with Google Search...');
-          const serviceConfig = {
-            tools: [{ googleSearch: {} }],
-            temperature: temperature
-          };
-          const response = await geminiService.models.generateContent({
-            model: 'gemini-2.5-flash',
-            contents: synthesizedPrompt,
-            config: serviceConfig,
-          });
-          finalPrompt = response.text;
-          setGeneratedPrompt(finalPrompt);
-        }
-
-        const imageUrl = await imageService.generateImage(finalPrompt, outputFormat, customAspectRatio);
+        // 🔑 KEY FIX: Pass the actual source image to editImage() instead of analyzing
+        // it to text and then generating a new image from scratch.
+        const imageUrl = await imageService.editImage(sourceImageFile, userInstruction, transformationContext);
         setGeneratedImage(imageUrl);
         setGallery(prev => [imageUrl, ...prev]);
 
@@ -208,6 +190,7 @@ const App: React.FC = () => {
       }
       return;
     }
+
 
     // --- Creation Flow ---
     if (creationMode === 'create') {

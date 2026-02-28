@@ -168,29 +168,41 @@ export const TransformationSelector: React.FC<TransformationSelectorProps> = ({
                                         <button
                                             onClick={handleClick}
                                             className={`px-3 py-1.5 text-sm rounded-md transition-all duration-200 border ${isSelected
-                                                    ? isLibreFormat
-                                                        ? 'bg-brand-orange border-brand-orange text-brand-dark-blue font-semibold'
-                                                        : 'bg-brand-cyan border-brand-cyan text-brand-dark-blue font-semibold'
-                                                    : 'bg-brand-light-blue border-brand-light-blue hover:border-brand-cyan/70 text-gray-200'
+                                                ? isLibreFormat
+                                                    ? 'bg-brand-orange border-brand-orange text-brand-dark-blue font-semibold'
+                                                    : 'bg-brand-cyan border-brand-cyan text-brand-dark-blue font-semibold'
+                                                : 'bg-brand-light-blue border-brand-light-blue hover:border-brand-cyan/70 text-gray-200'
                                                 }`}
                                         >
                                             {label}
                                         </button>
-                                        {/* Custom ratio input shown inline when format-libre is selected */}
+                                        {/* Free format input — shown full-width below buttons when format-libre is selected */}
                                         {isLibreFormat && outputFormat === 'format-libre' && (
-                                            <div className="flex items-center gap-2 w-full mt-2 p-2 bg-brand-orange/10 border border-brand-orange/40 rounded-md">
-                                                <span className="text-xs text-brand-orange font-semibold whitespace-nowrap">✦ Nano Banana 2</span>
-                                                <span className="text-xs text-gray-400">Ratio&nbsp;W:H</span>
-                                                <input
-                                                    type="text"
-                                                    value={customAspectRatio}
-                                                    onChange={(e) => setCustomAspectRatio(e.target.value)}
-                                                    placeholder="ex: 3:5"
-                                                    className="w-24 bg-brand-dark-blue border border-brand-orange/50 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:ring-1 focus:ring-brand-orange"
-                                                />
-                                                <span className="text-xs text-gray-500 italic">Laisser vide = auto</span>
+                                            <div className="w-full mt-3 space-y-1.5">
+                                                <div className="flex items-center gap-2 w-full bg-brand-dark-blue border border-brand-orange/50 rounded-lg px-3 py-2 focus-within:ring-1 focus-within:ring-brand-orange transition-all">
+                                                    <span className="text-brand-orange text-sm flex-shrink-0">✦</span>
+                                                    <input
+                                                        type="text"
+                                                        value={customAspectRatio}
+                                                        onChange={(e) => setCustomAspectRatio(e.target.value)}
+                                                        placeholder="ex : A4 horizontal, 6:7, 1200x630, carré..."
+                                                        className="flex-1 bg-transparent text-sm text-gray-200 placeholder-gray-500 focus:outline-none"
+                                                        autoFocus
+                                                    />
+                                                    {customAspectRatio && (
+                                                        <button
+                                                            onClick={() => setCustomAspectRatio('')}
+                                                            className="text-gray-500 hover:text-gray-300 text-xs flex-shrink-0"
+                                                            title="Effacer"
+                                                        >✕</button>
+                                                    )}
+                                                </div>
+                                                <p className="text-xs text-gray-500 px-1">
+                                                    Décris librement : ratio <span className="text-gray-400">16:9</span>, format papier <span className="text-gray-400">A4 portrait</span>, dimensions <span className="text-gray-400">1080x1350</span>...
+                                                </p>
                                             </div>
                                         )}
+
                                     </React.Fragment>
                                 );
                             })}
